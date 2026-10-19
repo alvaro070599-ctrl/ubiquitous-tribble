@@ -1,0 +1,32 @@
+{
+  "name": "rifa-nicolly-joao",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "db:push": "prisma db push",
+    "db:seed": "node prisma/seed.cjs"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.8.2",
+    "mercadopago": "^2.5.0",
+    "next": "^15.3.2",
+    "qrcode": "^1.5.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19.0.0",
+    "prisma": "^6.8.2",
+    "typescript": "^5.8.3",
+    "dotenv": "^16.4.7"
+  },
+  "engines": {
+    "node": ">=20.19.0 <25"
+  }
+}

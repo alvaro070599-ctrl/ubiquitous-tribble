@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model RaffleNumber {
+  id            Int      @id @default(autoincrement())
+  number        Int      @unique
+  status        String   @default("AVAILABLE") // AVAILABLE, PENDING, PAID
+  buyerName     String?
+  buyerEmail    String?
+  buyerPhone    String?
+  reservationId String?
+  paymentId     String?
+  expiresAt     DateTime?
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([status])
+  @@index([reservationId])
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  buyerName       String
+  buyerEmail      String
+  buyerPhone      String
+  numbers         String
+  amountCents     Int
+  status          String   @default("PENDING") // PENDING, PAID, EXPIRED, CANCELLED
+  paymentId       String?  @unique
+  pixQrCode       String?
+  pixQrCodeBase64 String?
+  pixTicketUrl    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  paidAt          DateTime?
+  @@index([status, createdAt])
+}
+
+model SiteSettings {
+  id          Int      @id @default(1)
+  title       String   @default("Rifa em prol do nosso casamento")
+  priceCents  Int      @default(1000)
+  drawDate    String   @default("30 de novembro")
+  instagram   String   @default("@joaoenicky")
+  pixKey      String?  // Só para uso administrativo/manual; não é exibida na página pública.
+  pixName     String?
+  updatedAt   DateTime @updatedAt
+}
