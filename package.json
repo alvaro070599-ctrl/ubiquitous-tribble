@@ -1,0 +1,11 @@
+{
+  "name": "rifa-casamento",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Rifa em prol do casamento — site estático + funções serverless na Vercel",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "dev": "vercel dev",
+    "test": "node test/pix.test.js"
+  }
+}
