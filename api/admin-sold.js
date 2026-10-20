@@ -33,7 +33,7 @@ module.exports = async (req, res) => {
         FROM public.raffle_orders o
         JOIN public.raffle_order_numbers n ON n.order_id = o.id
         WHERE o.status IN ('paid', 'legacy_paid')
-           OR (o.status = 'pending' AND o.expires_at > NOW())
+           OR o.status = 'pending'
         GROUP BY o.id
         ORDER BY o.created_at DESC`);
       orders = orderResult.rows.map(o => ({
