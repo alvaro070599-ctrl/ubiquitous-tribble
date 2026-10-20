@@ -1,28 +1,28 @@
 # Rifa em prol do casamento — Nicolly & João
 
-Site estático (`public/`) + funções serverless (`api/`) para a Vercel.
-O **Pix (QR Code + copia e cola)** é gerado no servidor com as variáveis de ambiente,
-então a chave Pix e o WhatsApp **não ficam escritos no HTML**.
+Site estático (`public/`) + funções serverless (`api/`) para a Vercel. O Pix (QR Code + copia e cola) é gerado no servidor.
 
-## Estrutura
-```
-public/index.html      página (sem nenhum dado sensível)
-public/img/            fotos do casal e dos prêmios
-api/config.js          GET  /api/config  -> preço, total, data, instagram, números vendidos
-api/pix.js             POST /api/pix     -> valida a compra e devolve o código Pix + link do WhatsApp
-api/_lib/pix.js        gerador do BR Code (CRC16)
-api/_lib/env.js        leitura das variáveis de ambiente
-vercel.json            cabeçalhos de segurança
-.env.example           modelo das variáveis
-```
+## Banco de dados Neon
 
-## Variáveis de ambiente (Vercel > Settings > Environment Variables)
+Configure a variável `DATABASE_URL` na Vercel com a connection string do Neon (incluindo SSL). A aplicação usa as tabelas `public.raffle_orders` e `public.raffle_order_numbers` já criadas no banco.
+
+A API agora:
+- cria o pedido como `pending` e registra os números no Neon;
+- bloqueia números já reservados ou pagos, inclusive em compras simultâneas;
+- libera automaticamente reservas pendentes após 20 minutos;
+- carrega os números reservados/pagos do banco para todos os visitantes.
+
+**Atenção:** gerar o Pix não confirma o pagamento automaticamente. O pedido precisa ser marcado como `paid` somente após conferir o recebimento no banco. A variável `SOLD_NUMBERS` continua servindo para números antigos já vendidos fora do sistema.
+
+## Variáveis de ambiente (Vercel → Settings → Environment Variables)
+
 | Variável | Obrigatória | Exemplo |
 |---|---|---|
-| `PIX_KEY` | sim | `+5551999999999`, e-mail, CPF só números ou chave aleatória |
-| `PIX_NAME` | sim | `NICOLLY E JOAO` (sem acento, até 25 letras) |
-| `PIX_CITY` | sim | `SAPUCAIA DO SUL` (sem acento, até 15 letras) |
-| `WHATSAPP` | sim | `5551999999999` (55 + DDD + número) |
+| `DATABASE_URL` | sim para reservar números compartilhados | connection string do Neon |
+| `PIX_KEY` | sim | chave Pix dos noivos |
+| `PIX_NAME` | sim | `NICOLLY E JOAO` |
+| `PIX_CITY` | sim | `SAPUCAIA DO SUL` |
+| `WHATSAPP` | sim | `5551999999999` |
 | `PRICE` | não (10) | `10` |
 | `TOTAL_NUMBERS` | não (500) | `500` |
 | `DRAW_DATE` | não | `30 DE NOVEMBRO` |
@@ -30,19 +30,14 @@ vercel.json            cabeçalhos de segurança
 | `MAX_PER_ORDER` | não (50) | `50` |
 | `SOLD_NUMBERS` | não | `3,17,25-30,108` |
 
-## Como publicar
-1. Suba esta pasta para um repositório no GitHub (o `.gitignore` já protege os arquivos `.env`).
-2. Na Vercel: **Add New → Project**, importe o repositório. Framework Preset: **Other**. Não precisa de Build Command.
-3. Em **Settings → Environment Variables**, cadastre as variáveis acima (marque Production).
-4. Faça o **Deploy**.
+Depois de adicionar ou alterar variáveis na Vercel, faça um novo deploy.
 
-Para atualizar os números vendidos: edite `SOLD_NUMBERS` e faça **Redeploy**
-(mudança em variável só vale para novos deploys).
+## Publicação e teste
 
-## Teste local
-```
-npm i -g vercel
-cp .env.example .env.local   # preencha os valores
-vercel dev
-npm test                     # testa o gerador de Pix e a API
-```
+1. Faça merge da branch de integração para `main` depois de revisar as alterações.
+2. Na Vercel, confirme `DATABASE_URL` e as variáveis do Pix.
+3. Faça deploy e teste uma reserva com um número livre.
+4. Abra o site em outro aparelho ou navegador para confirmar que o número aparece como reservado.
+5. Confira que uma nova tentativa para o mesmo número é recusada.
+
+O projeto requer Node.js 18 ou superior.
