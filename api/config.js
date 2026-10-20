@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
     let soldNumbers = [...c.soldNumbers];
     if (process.env.DATABASE_URL) {
       const pool = getPool();
-      // Pagos ficam vendidos; toda reserva criada ao gerar o Pix continua bloqueada até liberação manual.
+      // Números ficam indisponíveis assim que o QR Pix é gerado; não há confirmação automática do pagamento.
       const result = await pool.query(`SELECT DISTINCT n.number
         FROM public.raffle_order_numbers n
         JOIN public.raffle_orders o ON o.id = n.order_id
