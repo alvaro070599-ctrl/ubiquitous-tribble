@@ -285,7 +285,7 @@ footer{text-align:center;font-size:.8rem;margin:34px 0 10px;opacity:.85}\n.heart
       <ol class="steps">
         <li>Abra o app do seu banco e escolha <b>Pix → Pix copia e cola</b> (ou leia o QR Code).</li>
         <li>Confira o valor e finalize o pagamento.</li>
-        <li>Depois, toque no botão abaixo para nos avisar e enviar o comprovante. Seus números ficam garantidos assim que confirmarmos. 🎉</li>
+        <li>Ao gerar este QR Code, seus números já ficam reservados no seu nome. Depois, envie o comprovante pelo botão abaixo para confirmarmos o pagamento. 🎉</li>
       </ol>
       <div class="actions">
         <button class="btn green" id="btnWpp">Já paguei – enviar comprovante</button>
@@ -518,7 +518,7 @@ fetch('/api/config',{cache:'no-store'})
           const amount=document.createElement('p');
           amount.textContent='Valor: '+Number(order.amount).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
           const status=document.createElement('p');
-          status.textContent='Situação: '+(order.status==='paid'||order.status==='legacy_paid'?'Pago':(order.status==='pending'?'Aguardando pagamento':'Outro'));
+          status.textContent='Situação: '+(order.status==='paid'||order.status==='legacy_paid'?'Pago':(order.status==='reserved'?'Reservado — aguardando Pix':'Outro'));
           card.append(name,nums,amount,status); results.appendChild(card);
         });
       } else {
