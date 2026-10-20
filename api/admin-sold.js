@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
         customerName: o.customer_name,
         customerPhone: o.customer_phone,
         amount: Number(o.amount),
-        status: o.status === 'pending' ? 'reserved' : o.status,
+        status: o.status === 'pending' ? 'sold_on_qr' : o.status,
         createdAt: o.created_at,
         expiresAt: o.expires_at,
         numbers: o.numbers.map(Number)
