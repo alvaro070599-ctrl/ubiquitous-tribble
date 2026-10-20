@@ -53,17 +53,11 @@ module.exports = async (req, res) => {
 
   const total = Math.round(numbers.length * cfg.price * 100) / 100;
   const orderId = 'RIFA' + crypto.randomBytes(5).toString('hex').toUpperCase();
-  const expiresAt = new Date(Date.now() + 20 * 60 * 1000);
+  const expiresAt = new Date('9999-12-31T23:59:59.999Z');
   const pool = getPool();
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    // Limpa reservas pendentes vencidas para liberar os números novamente.
-    await client.query(`DELETE FROM public.raffle_order_numbers n
-      USING public.raffle_orders o
-      WHERE n.order_id = o.id AND o.status = 'pending' AND o.expires_at <= NOW()`);
-    await client.query(`DELETE FROM public.raffle_orders WHERE status = 'pending' AND expires_at <= NOW()`);
-
     // A restrição UNIQUE(number) garante que duas compras simultâneas não peguem o mesmo número.
     const conflict = await client.query(
       `SELECT n.number FROM public.raffle_order_numbers n
