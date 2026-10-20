@@ -12,7 +12,7 @@ module.exports = async (req, res) => {
     let soldNumbers = [...c.soldNumbers];
     if (process.env.DATABASE_URL) {
       const pool = getPool();
-      // Pagos ficam vendidos; pedidos pendentes bloqueiam por até 20 minutos.
+      // Pagos ficam vendidos; toda reserva criada ao gerar o Pix continua bloqueada até liberação manual.
       const result = await pool.query(`SELECT DISTINCT n.number
         FROM public.raffle_order_numbers n
         JOIN public.raffle_orders o ON o.id = n.order_id
