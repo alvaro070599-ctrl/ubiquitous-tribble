@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
   }
   const c = readConfig();
   try {
-    let soldNumbers = [...c.soldNumbers];
+    let soldNumbers = [...new Set([...c.soldNumbers, 47])];
     if (process.env.DATABASE_URL) {
       const pool = getPool();
       // Números ficam indisponíveis assim que o QR Pix é gerado; não há confirmação automática do pagamento.
@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
         FROM public.raffle_order_numbers n
         JOIN public.raffle_orders o ON o.id = n.order_id
         WHERE o.status IN ('paid', 'legacy_paid')
-           OR (o.status = 'pending' AND o.expires_at > NOW())
+           OR o.status = 'pending'
         ORDER BY n.number`);
       soldNumbers = [...new Set([...soldNumbers, ...result.rows.map(r => Number(r.number))])].sort((a,b)=>a-b);
     }
