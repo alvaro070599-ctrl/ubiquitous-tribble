@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
   }
   try {
     const c = readConfig();
-    let soldNumbers = [...c.soldNumbers];
+    let soldNumbers = [...new Set([...c.soldNumbers, 47])];
     let orders = [];
     if (process.env.DATABASE_URL) {
       const pool = getPool();
@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
         FROM public.raffle_order_numbers n
         JOIN public.raffle_orders o ON o.id = n.order_id
         WHERE o.status IN ('paid', 'legacy_paid')
-           OR (o.status = 'pending' AND o.expires_at > NOW())
+           OR o.status = 'pending'
         ORDER BY n.number`);
       soldNumbers = [...new Set([...soldNumbers, ...result.rows.map(r => Number(r.number))])];
       const orderResult = await pool.query(`SELECT o.order_code, o.customer_name, o.customer_phone,
@@ -47,6 +47,11 @@ module.exports = async (req, res) => {
         numbers: o.numbers.map(Number)
       }));
     }
+    // Compra antiga informada manualmente: número 047 da Ingrid.
+    if (!orders.some(o => Array.isArray(o.numbers) && o.numbers.includes(47))) {
+      orders.push({ orderCode: 'LEGACY-047', customerName: 'Ingrid', customerPhone: '', amount: 0, status: 'legacy_paid', createdAt: null, expiresAt: null, numbers: [47] });
+    }
+    soldNumbers = [...new Set([...soldNumbers, 47])];
     soldNumbers.sort((a, b) => a - b);
     return res.status(200).json({ soldNumbers, totalNumbers: c.totalNumbers, availableCount: Math.max(0, c.totalNumbers - soldNumbers.length), orders });
   } catch (err) {
