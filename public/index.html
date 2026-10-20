@@ -504,7 +504,27 @@ fetch('/api/config',{cache:'no-store'})
       const title=document.createElement('p'); title.style.marginTop='8px'; title.innerHTML='<strong>Números vendidos/reservados:</strong>';
       const list=document.createElement('div'); list.className='admin-list';
       list.textContent=data.soldNumbers.length ? data.soldNumbers.map(n=>String(n).padStart(3,'0')).join(', ') : 'Nenhum número registrado.';
-      results.append(summary,title,list); results.hidden=false;
+      results.append(summary,title,list);
+      const ordersTitle=document.createElement('p'); ordersTitle.style.marginTop='16px'; ordersTitle.innerHTML='<strong>Compradores e pedidos:</strong>';
+      results.appendChild(ordersTitle);
+      if(Array.isArray(data.orders) && data.orders.length){
+        data.orders.forEach(order=>{
+          const card=document.createElement('div');
+          card.style.cssText='border-top:1px solid #e3d0b5;padding:10px 0;font-size:.85rem';
+          const name=document.createElement('p'); const strong=document.createElement('strong');
+          strong.textContent=order.customerName || 'Nome não informado'; name.appendChild(strong);
+          const nums=document.createElement('p');
+          nums.textContent='Números: '+order.numbers.map(n=>String(n).padStart(3,'0')).join(', ');
+          const amount=document.createElement('p');
+          amount.textContent='Valor: '+Number(order.amount).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+          const status=document.createElement('p');
+          status.textContent='Situação: '+(order.status==='paid'||order.status==='legacy_paid'?'Pago':(order.status==='pending'?'Aguardando pagamento':'Outro'));
+          card.append(name,nums,amount,status); results.appendChild(card);
+        });
+      } else {
+        const none=document.createElement('p'); none.textContent='Ainda não há pedidos ativos no banco de dados. Números definidos manualmente na Vercel aparecem na lista acima, mas não têm nome de comprador associado.'; results.appendChild(none);
+      }
+      results.hidden=false;
     }catch(err){error.textContent=err.message || 'Falha ao consultar. Tente novamente.';}
     finally{login.disabled=false;login.textContent='Consultar números';}
   });
