@@ -193,7 +193,7 @@ input:focus{outline:none;border-color:var(--brown2)}
   padding:10px 18px;border-radius:24px;font-size:.88rem;z-index:99;opacity:0;pointer-events:none;transition:opacity .2s
 }
 .toast.show{opacity:1}
-footer{text-align:center;font-size:.8rem;margin:34px 0 10px;opacity:.85}
+footer{text-align:center;font-size:.8rem;margin:34px 0 10px;opacity:.85}\n.heart-admin{border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;padding:3px 5px;border-radius:6px}\n.heart-admin:focus-visible{outline:2px solid var(--gold)}\n.admin-results{margin-top:14px;background:#fffaf2;border-radius:12px;padding:12px;line-height:1.6;overflow-wrap:anywhere}\n.admin-list{max-height:34vh;overflow:auto;font-size:.88rem;margin-top:8px}
 </style>
 </head>
 <body>
@@ -238,7 +238,7 @@ footer{text-align:center;font-size:.8rem;margin:34px 0 10px;opacity:.85}
   <div class="grid" id="grid"></div>
 
   <div class="closing">Cada número nos aproxima desse sonho!</div>
-  <footer>Agradecemos de coração por cada contribuição! ♡</footer>
+  <footer>Agradecemos de coração por cada contribuição! <button type="button" class="heart-admin" id="heartAdmin" aria-label="Acesso administrativo da rifa" title="Acesso administrativo">♡</button></footer>
 </div>
 
 <!-- BARRA FIXA -->
@@ -465,5 +465,51 @@ fetch('/api/config',{cache:'no-store'})
     g.textContent='Não foi possível carregar a rifa agora. Recarregue a página.';
   });
 </script>
+
+<!-- PAINEL ADMINISTRATIVO ACESSADO PELO CORAÇÃO -->
+<div class="overlay" id="adminOverlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+    <button class="close-x" id="adminClose" aria-label="Fechar">&times;</button>
+    <h3 id="adminTitle">Painel da rifa ♡</h3>
+    <p class="sm">Digite a senha para consultar os números vendidos.</p>
+    <label for="adminPassword">Senha administrativa</label>
+    <input id="adminPassword" type="password" inputmode="numeric" autocomplete="current-password" placeholder="Digite a senha">
+    <div class="err" id="adminError" role="alert"></div>
+    <div class="actions"><button type="button" class="btn" id="adminLogin">Consultar números</button></div>
+    <div class="admin-results" id="adminResults" hidden></div>
+  </div>
+</div>
+<script>
+(function(){
+  const heart = document.getElementById('heartAdmin');
+  const overlay = document.getElementById('adminOverlay');
+  const pass = document.getElementById('adminPassword');
+  const error = document.getElementById('adminError');
+  const results = document.getElementById('adminResults');
+  const login = document.getElementById('adminLogin');
+  function closePanel(){ overlay.classList.remove('open'); overlay.setAttribute('aria-hidden','true'); pass.value=''; error.textContent=''; }
+  heart.addEventListener('click',()=>{ overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false'); results.hidden=true; error.textContent=''; pass.focus(); });
+  document.getElementById('adminClose').addEventListener('click',closePanel);
+  overlay.addEventListener('click',e=>{if(e.target===overlay) closePanel();});
+  pass.addEventListener('keydown',e=>{if(e.key==='Enter') login.click();});
+  login.addEventListener('click',async()=>{
+    error.textContent=''; results.hidden=true; login.disabled=true; login.textContent='Consultando…';
+    try{
+      const response=await fetch('/api/admin-sold',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass.value})});
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok) throw new Error(data.error || 'Não foi possível acessar o painel.');
+      results.replaceChildren();
+      const summary=document.createElement('p');
+      summary.innerHTML='<strong>'+data.soldNumbers.length+'</strong> número(s) vendido(s) ou reservado(s) · <strong>'+data.availableCount+'</strong> disponível(is) de '+data.totalNumbers+'.';
+      const title=document.createElement('p'); title.style.marginTop='8px'; title.innerHTML='<strong>Números vendidos/reservados:</strong>';
+      const list=document.createElement('div'); list.className='admin-list';
+      list.textContent=data.soldNumbers.length ? data.soldNumbers.map(n=>String(n).padStart(3,'0')).join(', ') : 'Nenhum número registrado.';
+      results.append(summary,title,list); results.hidden=false;
+    }catch(err){error.textContent=err.message || 'Falha ao consultar. Tente novamente.';}
+    finally{login.disabled=false;login.textContent='Consultar números';}
+  });
+})();
+</script>
+
 </body>
 </html>
